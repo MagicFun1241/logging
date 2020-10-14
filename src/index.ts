@@ -15,15 +15,19 @@ const time = () => {
 
 const indentText = (text) => text.replace(/^(?!\s+$)/mg, ' '.repeat(13)).trim();
 
-const logger = ({
-                    title,
-                    messages,
-                    logFunction
-                }) => {
-    const formattedMessages = messages.map((message) => {
-        if (typeof message === 'string') {
-            return message;
-        }
+interface LoggerOptions {
+    debugFunction: any;
+    logFunction: any;
+}
+
+function logger(options: {
+    title: string;
+    messages: Array<any>;
+    logFunction: any;
+}) {
+    const formattedMessages = options.messages.map(message => {
+        if (typeof message === 'string') return message;
+
         return nicelyFormat(message, {
             highlight: true,
             min: true,
@@ -48,60 +52,58 @@ const logger = ({
             }
         });
     }).map(indentText);
-    logFunction(gray(time()), `[${title}]`, ...formattedMessages);
-};
 
-const createLogger = (title,
-                      {
-                          debugFunction = createDebug(title),
-                          logFunction = console.log
-                      } = {}) => {
+    options.logFunction(gray(time()), `[${options.title}]`, ...formattedMessages);
+}
+
+function createLogger(title: string, options: LoggerOptions = {
+    debugFunction: createDebug(title),
+    logFunction: console.log
+}) {
     return {
         debug(...messages) {
             logger({
                 title: yellow(`DEBUG ${title}`),
                 messages,
-                logFunction: debugFunction
+                logFunction: options.debugFunction
             });
         },
         info(...messages) {
             logger({
                 title: blue(title),
                 messages,
-                logFunction
+                logFunction: options.logFunction
             });
         },
         warn(...messages) {
             logger({
                 title: yellow(`WARNING ${title}`),
                 messages,
-                logFunction
+                logFunction: options.logFunction
             });
         },
         error(...messages) {
             logger({
                 title: red(`ERROR ${title}`),
                 messages,
-                logFunction
+                logFunction: options.logFunction
             });
         },
         fatal(...messages) {
             logger({
                 title: red(`========= FATAL ${title} =========`),
                 messages,
-                logFunction
+                logFunction: options.logFunction
             });
         },
         trace(...messages) {
             logger({
                 title: red(`TRACE ${title}`),
                 messages,
-                logFunction
+                logFunction: options.logFunction
             });
         }
-
     };
-};
+}
 
 export default createLogger;
-

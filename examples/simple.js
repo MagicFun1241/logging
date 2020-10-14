@@ -1,5 +1,5 @@
 // yarn run example
-import logging from '../src';
+import logging from '../lib';
 
 const log = logging('Feature');
 
